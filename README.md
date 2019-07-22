@@ -3,7 +3,7 @@ Data and evaluation scipt for the paper "Investigating Evaluation of Open-Domain
 
 ## Data
 - Data is present in the folder `multiref-dataset`
-- It is formatted in a json format. The file contains 1000 jsons, 1 on each line, corresponding to a test dialog form the dailydialog dataset.
+- It is formatted in a json format. The file contains 1000 jsons, 1 on each line, corresponding to a test dialog from the dailydialog dataset.
 - Every dialog json contains the dialog text in the 'dialogue' key field. The value for 'dialogue' key field is a list of utterances jsons.
 - In each utterance json, the multiple references are present in the responses field. The first response corresponds to the original reference from the dataset and is the same as the next utterance text in the dialog.
  -Since the last utterance in a dialog doesn't have a reply, it does not have a responses field.
@@ -33,5 +33,5 @@ For evaluation, you can use the command
 The arguments for this file are following - 
  - --multiref_file - The multiref dataset file. Default is ../multiref-dataset/multireftest.json
  - --singleref_file - The single reference test file. Default is jsons/test.tgt
- - --pred_file - The file you want to run evaluation on
+ - --pred_file - The file you want to run evaluation on. It should contain outputs for the 6740 contexts for the 1000 dialogs present in the test set.
  - --num_multi_response - The number of references you want to use, Default=5
