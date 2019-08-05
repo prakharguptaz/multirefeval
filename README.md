@@ -1,5 +1,5 @@
 # multirefeval
-Data and evaluation scipt for the paper "Investigating Evaluation of Open-Domain Dialogue Systems With Human Generated Multiple References" in SIGdial 2019
+Data and evaluation script for the paper "Investigating Evaluation of Open-Domain Dialogue Systems With Human Generated Multiple References" in SIGDIAL 2019 - https://arxiv.org/abs/1907.10568
 
 ## Data
 - Data is present in the folder `multiref-dataset`
