@@ -19,6 +19,9 @@ from nlgeval import NLGEval
 nlgeval = NLGEval(metrics_to_omit=['CIDEr']) 
 cc = SmoothingFunction()
 
+
+overlapped_dialogueindices = [5, 24, 28, 31, 38, 41, 45, 64, 74, 75, 81, 94, 105, 107, 115, 119, 124, 135, 145, 146, 152, 158, 184, 190, 194, 197, 200, 202, 203, 223, 229, 237, 240, 248, 255, 258, 262, 267, 274, 277, 292, 298, 301, 303, 311, 312, 318, 323, 335, 348, 353, 376, 395, 404, 410, 413, 432, 443, 444, 452, 454, 458, 463, 478, 498, 500, 503, 504, 516, 530, 532, 538, 556, 557, 567, 568, 569, 572, 575, 578, 581, 584, 585, 589, 600, 606, 610, 614, 630, 635, 636, 639, 640, 645, 647, 651, 654, 659, 661, 671, 675, 681, 682, 683, 692, 694, 698, 699, 700, 704, 705, 706, 714, 715, 716, 722, 725, 727, 731, 734, 735, 743, 745, 747, 752, 754, 755, 756, 764, 765, 770, 777, 787, 798, 802, 807, 809, 812, 813, 816, 820, 821, 825, 828, 834, 836, 840, 841, 842, 845, 846, 849, 854, 857, 859, 863, 864, 870, 873, 875, 878, 882, 883, 891, 892, 893, 894, 895, 899, 903, 904, 908, 909, 912, 916, 917, 927, 931, 932, 933, 936, 940, 942, 948, 950, 951, 953, 954, 955, 959, 961, 962, 966, 967, 968, 974, 979, 982, 986, 995, 996, 997, 998, 999]
+
 def clean_tokenize_sentence(data):
     data = data.lower().strip()#.replace(" \' ", "\'")
     spacy_token = nlp(data)
@@ -129,6 +132,8 @@ def get_ref_hyp_pairs_json(multiref_data, predictions, prevgt_ref, mapping_json,
     for did, _ in enumerate(multiref_data):
         #did and dialogue_id shoud be same
         dialogue_id = multiref_data[did]['index']
+        if dialogue_id in overlapped_dialogueindices:
+            continue
         if break_done:
             break
         for u, utterance_data in enumerate(multiref_data[dialogue_id]['dialogue']):
@@ -355,7 +360,21 @@ def get_corpus_bleu(list_references, list_hypothesis):
     print('Average corpus bleu-2;'+'\t', score_corpusBLEU2)
     print('Average corpus bleu-4;'+'\t', score_corpusBLEU4)
 
+def clean_overlaps(args, list_references, list_hypothesis):
+    overlap_linenumbers, new_list_references, new_list_hypothesis = [], [], []
+    mapping_dict = read_duid_mapping_json(args.fold+ '_duid_mapping')
+    for key, value in mapping_dict.items():
+        if int(key.split('_')[0]) in overlapped_dialogueindices:
+            overlap_linenumbers.append(int(value)-1)
+    for i, item in enumerate(list_references):
+        if i not in overlap_linenumbers:
+            new_list_references.append(item)
+    for i, item in enumerate(list_hypothesis):
+        if i not in overlap_linenumbers:
+            new_list_hypothesis.append(item)
+    print('cleaned test set overlaps', len(new_list_references), len(new_list_hypothesis))
 
+    return new_list_references, new_list_hypothesis
 
 def get_metrics_multiref_frompremapped(args):
     list_references = read_multiref_premappeddata(args.premappedmulti_csv_file, num_response = args.num_multi_response)
@@ -373,6 +392,8 @@ def get_metrics_frompremapped_prevgt(args):
     
     list_references_listfied = [[ref] for ref in list_references]
 
+    if args.remove_overlap:
+        list_references_listfied, list_hypothesis = clean_overlaps(args, list_references_listfied, list_hypothesis)
     # pdb.set_trace()
     get_all_metrics(list_references_listfied, list_hypothesis)
 
@@ -486,9 +507,13 @@ def main():
     parser.add_argument('--singleref_file', default='jsons/test.tgt')
     parser.add_argument('--pred_file', default='')
     parser.add_argument('--fold', default='jsons/test')
+    parser.add_argument("--remove_overlap", default=False, action="store_true" , help="Flag to remove overlap from dailydialog original trainset")
     parser.add_argument('--num_multi_response', default=5)
     args = parser.parse_args()
     
+    if args.remove_overlap == False:
+        global overlapped_dialogueindices
+        overlapped_dialogueindices = []
     ''''''
     # get_metrics_multiref_frompremapped(args)
     print('******Testing model*******')
